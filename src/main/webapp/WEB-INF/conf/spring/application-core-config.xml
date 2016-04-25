@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+		http://www.springframework.org/schema/context
+		http://www.springframework.org/schema/context/spring-context-4.2.xsd
+		http://www.springframework.org/schema/tx
+		http://www.springframework.org/schema/tx/spring-tx.xsd">
+		
+	<!-- 加载配置文件 -->
+	<context:property-placeholder location="/WEB-INF/conf/db.properties" />
+	
+	<!-- 数据源配置，使用Spring默认数据源 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+        destroy-method="close">
+		<property name="driverClassName" value="${jdbc.driver}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+		<property name="maxActive" value="100" />
+		<property name="maxIdle" value="10" />
+	</bean>
+	
+	<!-- SqlSessionFactory配置 -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<!-- 加载mybatis配置文件 -->
+		<property name="dataSource" ref="dataSource"/>
+        <property name="configLocation" value="/WEB-INF/conf/mybatis/mybatis-core-config.xml"/>
+	</bean>
+	
+	<!-- 配置事务支持-->
+	<!-- PlatformTransactionMnager -->
+	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+	    <property name="dataSource" ref="dataSource" />
+	</bean>
+	<!--配置支持注解方式使用事务 -->
+	<tx:annotation-driven transaction-manager="txManager" />
+
+    <!-- 配置mapper接口自动扫描
+                               遵循的规范：映射文件的名称和mapper接口的名称要相同且在同一目录下
+                               自动扫描出的mapper的bean的id为mapper类名（首字母小写） -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!-- 指定扫描的包名 ,如果要扫描多个包，包名之间用逗号分隔-->
+        <property name="basePackage" value="com..mapper" />
+    </bean>
+	
+</beans>
